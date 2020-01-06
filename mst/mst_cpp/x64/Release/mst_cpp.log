@@ -1,0 +1,6 @@
+﻿  blob.cpp
+  convolution_layer.cpp
+  layer.cpp
+  network.cpp
+  relu_layer.cpp
+  mst_cpp.vcxproj -> D:\Development\mst\mst\mst_cpp\.\lib\mst_cpp.lib

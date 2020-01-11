@@ -1,10 +1,13 @@
 d:\development\mst\mst\mst_cpp\x64\release\mst_cpp.pdb
+d:\development\mst\mst\mst_cpp\x64\release\utility.obj
 d:\development\mst\mst\mst_cpp\x64\release\relu_layer.obj
 d:\development\mst\mst\mst_cpp\x64\release\network.obj
-d:\development\mst\mst\mst_cpp\x64\release\layer.obj
+d:\development\mst\mst\mst_cpp\x64\release\relu_layer_param.obj
+d:\development\mst\mst\mst_cpp\x64\release\convolution_layer_param.obj
+d:\development\mst\mst\mst_cpp\x64\release\base_layer_param.obj
+d:\development\mst\mst\mst_cpp\x64\release\base_layer.obj
 d:\development\mst\mst\mst_cpp\x64\release\convolution_layer.obj
 d:\development\mst\mst\mst_cpp\x64\release\blob.obj
-d:\development\mst\mst\mst_cpp\lib\mst_cpp.lib
 d:\development\mst\mst\mst_cpp\.\lib\mst_cpp.lib
 d:\development\mst\mst\mst_cpp\x64\release\mst_cpp.tlog\cl.command.1.tlog
 d:\development\mst\mst\mst_cpp\x64\release\mst_cpp.tlog\cl.read.1.tlog

@@ -15,26 +15,15 @@ namespace mst
 
 			//	constructor
 			ConvolutionLayer::ConvolutionLayer()
-				: filter_(0)
-				, kernel_size_(3)
-				, stride_(1)
-				, padding_(1)
-				, padding_mode_(0)
-				, use_bias_(true)
+				: layer_param_()
 				, kernel_count_(0)
+				, kernel_mem_size_(0)
 				, kernel_(nullptr)
+				, bias_mem_size_(0)
 				, bias_(nullptr)
-				, inputs_()
-				, outputs_()
-				, outputs_data_size_(0)
-				, outputs_batch_data_size_(0)
-				, padding_workspace_cols_(0)
-				, padding_workspace_rows_(0)
-				, padding_workspace_size_(0)
-				, padding_workspace_mem_size_(0)
+				, padding_workspace_()
 				, padding_workspace_offset_rows_(0)
 				, padding_workspace_copy_cols_mem_size_(0)
-				, padding_workspace_(nullptr)
 				, conv_target_cols_(0)
 				, conv_target_rows_(0)
 				, conv_elem_count_(0)
@@ -43,6 +32,7 @@ namespace mst
 				, conv_workspace_mem_size_(0)
 				, conv_workspace_(nullptr)
 			{
+				type_ = "ConvolutionLayer";
 			}
 
 
@@ -54,26 +44,18 @@ namespace mst
 
 
 			//	initialize
-			bool ConvolutionLayer::Initialize(int _filter, int _kernel_size, int _strides, int _padding, int _padding_mode, bool _use_bias)
+			bool ConvolutionLayer::Initialize(ConvolutionLayerParam& _param)
 			{
 				bool bret;
 
 
 				//	input check
-				if (_filter < 0)	return false;
-				if (_kernel_size < 0)	return false;
-				if (_strides < 0)	return false;
-				if (_padding < 0)	return false;
-				if ((_padding_mode < 0) || (_padding_mode > 2))	return false;
+				bret = _param.CheckParam();
+				if (!bret)	return false;
 
 
 				//	set parameter
-				filter_ = _filter;
-				kernel_size_ = _kernel_size;
-				stride_ = _strides;
-				padding_ = _padding;
-				padding_mode_ = _padding_mode;
-				use_bias_ = _use_bias;
+				layer_param_ = _param;
 
 
 				//	allocate memory
@@ -145,15 +127,15 @@ namespace mst
 
 
 				//	conv
-				dst = outputs_[0]->data_;
 				kernel_mem = kernel_;
-				for (f = 0; f < filter_; ++f)
+				dst = output_blobs_[0]->data_;
+				for (f = 0; f < layer_param_.filter_; ++f)
 				{
 					tmp_dst = dst;
 					src = conv_workspace_;
-					for (b = 0; b < inputs_[0]->shape_[0]; ++b)
+					for (b = 0; b < input_blobs_[0]->shape_[0]; ++b)
 					{
-						for (c = 0; c < inputs_[0]->shape_[1]; ++c)
+						for (c = 0; c < input_blobs_[0]->shape_[1]; ++c)
 						{
 
 							for (n = 0; n < conv_elem_count_; ++n)
@@ -170,16 +152,16 @@ namespace mst
 
 						}
 
-						tmp_dst += outputs_batch_data_size_;
+						tmp_dst += output_blobs_[0]->count_[1];
 					}
 
-					dst += outputs_data_size_;
+					dst += output_blobs_[0]->count_[2];
 					kernel_mem += kernel_count_;
 				}
 
 
 				//	bias
-				if (use_bias_)
+				if (layer_param_.use_bias_)
 				{
 
 				}
@@ -189,7 +171,6 @@ namespace mst
 			//	backward
 			void ConvolutionLayer::Backward()
 			{
-
 			}
 
 
@@ -199,44 +180,29 @@ namespace mst
 				int size;
 
 
-				//	check initialize
-				if (kernel_ != nullptr)	return false;
-
-
 				//	allocate
-				kernel_count_ = kernel_size_ * kernel_size_;
-				size = filter_ * kernel_count_ * sizeof(double);
+				kernel_count_ = layer_param_.kernel_size_ * layer_param_.kernel_size_;
+				size = layer_param_.filter_ * kernel_count_ * sizeof(double);
 
-				kernel_ = (double*)malloc(size);
-				if (kernel_ == nullptr)	return false;
+				if (size > kernel_mem_size_)
+				{
+					if (kernel_ != nullptr)
+					{
+						free(kernel_);
+						kernel_ = nullptr;
+
+						kernel_mem_size_ = 0;
+					}
+
+					kernel_mem_size_ = size;
+
+					kernel_ = (double*)malloc(kernel_mem_size_);
+					if (kernel_ == nullptr)	return false;
+				}
 
 
 				//	initialize
-				memset(kernel_, 0, size);
-
-				kernel_[0] = -1;
-				kernel_[1] = -2;
-				kernel_[2] = -1;
-
-				kernel_[3] = 0;
-				kernel_[4] = 0;
-				kernel_[5] = 0;
-
-				kernel_[6] = 1;
-				kernel_[7] = 2;
-				kernel_[8] = 1;
-
-				kernel_[9 + 0] = -1;
-				kernel_[9 + 1] = 0;
-				kernel_[9 + 2] = 1;
-
-				kernel_[9 + 3] = -2;
-				kernel_[9 + 4] = 0;
-				kernel_[9 + 5] = 2;
-
-				kernel_[9 + 6] = -1;
-				kernel_[9 + 7] = 0;
-				kernel_[9 + 8] = 1;
+				memset(kernel_, 0, kernel_mem_size_);
 
 				return true;
 			}
@@ -248,22 +214,31 @@ namespace mst
 				int size;
 
 
-				//	check initialize
-				if (bias_ != nullptr)	return false;
-
-				if (!use_bias_)	return true;
+				//	check use
+				if (!layer_param_.use_bias_)	return true;
 
 
 				//	allocate
-				size = filter_ * sizeof(double);
+				size = layer_param_.filter_ * sizeof(double);
+				if (size > bias_mem_size_)
+				{
+					if (bias_ != nullptr)
+					{
+						free(bias_);
+						bias_ = nullptr;
 
-				bias_ = (double*)malloc(size);
-				if (bias_ == nullptr)	return false;
+						bias_mem_size_ = 0;
+					}
+
+					bias_mem_size_ = size;
+
+					bias_ = (double*)malloc(bias_mem_size_);
+					if (bias_ == nullptr)	return false;
+				}
 
 
 				//	initialize
-				memset(bias_, 0, size);
-
+				memset(bias_, 0, bias_mem_size_);
 
 				return true;
 			}
@@ -272,39 +247,26 @@ namespace mst
 			//	allocate padding workspace memory
 			bool ConvolutionLayer::AllocatePaddingWorkspaceMemory()
 			{
-				int size;
+				bool bret;
+				std::vector<int> shape;
 
 
-				//	allocate
-				padding_workspace_rows_ = padding_ + inputs_[0]->shape_[2] + padding_;
-				padding_workspace_cols_ = padding_ + inputs_[0]->shape_[3] + padding_;
-				padding_workspace_size_ = padding_workspace_cols_ * padding_workspace_rows_;
-				size = inputs_[0]->shape_[0] * inputs_[0]->shape_[1] * padding_workspace_size_ * sizeof(double);
+				//	reshape
+				shape = {
+					input_blobs_[0]->shape_[0],
+					input_blobs_[0]->shape_[1],
+					layer_param_.padding_ + input_blobs_[0]->shape_[2] + layer_param_.padding_,
+					layer_param_.padding_ + input_blobs_[0]->shape_[3] + layer_param_.padding_
+				};
 
-				if (size > padding_workspace_mem_size_)
-				{
-					if (padding_workspace_ != nullptr)
-					{
-						free(padding_workspace_);
-						padding_workspace_ = nullptr;
-
-						padding_workspace_mem_size_ = 0;
-					}
-
-					padding_workspace_mem_size_ = size;
-					padding_workspace_ = (double*)malloc(padding_workspace_mem_size_);
-					if (padding_workspace_ == nullptr)	return false;
-				}
-
-
-				//	initialize
-				memset(padding_workspace_, 0, padding_workspace_mem_size_);
+				bret = padding_workspace_.Reshape(shape);
+				if (!bret)	return false;
 
 
 				//	set variable
-				padding_workspace_offset_rows_ = padding_ * padding_workspace_cols_;
-				padding_workspace_copy_cols_mem_size_ = inputs_[0]->shape_[3] * sizeof(double);
-
+				padding_workspace_offset_rows_ = layer_param_.padding_ * padding_workspace_.count_[3];
+				padding_workspace_copy_cols_mem_size_ = input_blobs_[0]->shape_[3] * sizeof(double);
+				
 
 				return true;
 			}
@@ -317,14 +279,14 @@ namespace mst
 
 
 				//	allocate
-				conv_target_cols_ = padding_workspace_cols_ - (kernel_size_ - 1);
-				conv_target_rows_ = padding_workspace_rows_ - (kernel_size_ - 1);
+				conv_target_rows_ = padding_workspace_.shape_[2] - (layer_param_.kernel_size_ - 1);
+				conv_target_cols_ = padding_workspace_.shape_[3] - (layer_param_.kernel_size_ - 1);
 
 				conv_elem_count_ = conv_target_cols_ * conv_target_rows_;
-				conv_data_count_ = inputs_[0]->shape_[1] * conv_elem_count_;
-				conv_total_count_ = inputs_[0]->shape_[0] * conv_data_count_;
+				conv_data_count_ = input_blobs_[0]->shape_[1] * conv_elem_count_;
+				conv_total_count_ = input_blobs_[0]->shape_[0] * conv_data_count_;
 
-				size = conv_total_count_ * (kernel_size_ * kernel_size_) * sizeof(double);
+				size = conv_total_count_ * (layer_param_.kernel_size_ * layer_param_.kernel_size_) * sizeof(double);
 
 				if (size > conv_workspace_mem_size_)
 				{
@@ -357,20 +319,16 @@ namespace mst
 				{
 					free(kernel_);
 					kernel_ = nullptr;
+
+					kernel_mem_size_ = 0;
 				}
 
 				if (bias_ != nullptr)
 				{
 					free(bias_);
 					bias_ = nullptr;
-				}
 
-				if (padding_workspace_ != nullptr)
-				{
-					free(padding_workspace_);
-					padding_workspace_ = nullptr;
-
-					padding_workspace_mem_size_ = 0;
+					bias_mem_size_ = 0;
 				}
 
 				if (conv_workspace_ != nullptr)
@@ -391,10 +349,8 @@ namespace mst
 				if (_blobs[0] == nullptr)	return false;
 
 				if (_blobs[0]->shape_.size() != 4)	return false;
-				if (_blobs[0]->shape_[0] <= 0)	return false;
-				if (_blobs[0]->shape_[1] <= 0)	return false;
-				if (_blobs[0]->shape_[2] < (kernel_size_ - padding_ - padding_))	return false;
-				if (_blobs[0]->shape_[3] < (kernel_size_ - padding_ - padding_))	return false;
+				if (_blobs[0]->shape_[2] < (layer_param_.kernel_size_ - layer_param_.padding_ - layer_param_.padding_))	return false;
+				if (_blobs[0]->shape_[3] < (layer_param_.kernel_size_ - layer_param_.padding_ - layer_param_.padding_))	return false;
 
 				return true;
 			}
@@ -414,11 +370,8 @@ namespace mst
 			//	reset input blobs
 			bool ConvolutionLayer::ResetInputBlobs(const std::vector<mst::cnn::Blob*>& _blobs)
 			{
-				inputs_.clear();
-				for each (mst::cnn::Blob* blob in _blobs)
-				{
-					inputs_.push_back(blob);
-				}
+				//	reset input blobls
+				input_blobs_ = _blobs;
 
 				return true;
 			}
@@ -431,25 +384,17 @@ namespace mst
 
 
 				//	reset output blobs
-				outputs_.clear();
-				for each (mst::cnn::Blob* blob in _blobs)
-				{
-					outputs_.push_back(blob);
-				}
+				output_blobs_ = _blobs;
 
-				shape.clear();
-				shape.push_back(inputs_[0]->shape_[0]);
-				shape.push_back(inputs_[0]->shape_[1]);
-				shape.push_back((inputs_[0]->shape_[2] + padding_ + padding_ - (kernel_size_ - 1)) / stride_);
-				shape.push_back((inputs_[0]->shape_[3] + padding_ + padding_ - (kernel_size_ - 1)) / stride_);
+				shape = {
+					input_blobs_[0]->shape_[0],
+					input_blobs_[0]->shape_[1],
+					(input_blobs_[0]->shape_[2] + layer_param_.padding_ + layer_param_.padding_ - (layer_param_.kernel_size_ - 1)) / layer_param_.stride_,
+					(input_blobs_[0]->shape_[3] + layer_param_.padding_ + layer_param_.padding_ - (layer_param_.kernel_size_ - 1)) / layer_param_.stride_
+				};
 
-				bret = outputs_[0]->Reshape(shape);
+				bret = output_blobs_[0]->Reshape(shape);
 				if (!bret)	return false;
-
-
-				//	set output variable
-				outputs_data_size_ = shape[2] * shape[3];
-				outputs_batch_data_size_ = shape[1] * outputs_batch_data_size_;
 
 				return true;
 			}
@@ -465,20 +410,20 @@ namespace mst
 				double* dst;
 
 
-				src = inputs_[0]->data_;
-				dst = padding_workspace_ + padding_;
-				for (b = 0; b < inputs_[0]->shape_[0]; ++b)
+				src = input_blobs_[0]->data_;
+				dst = padding_workspace_.data_ + layer_param_.padding_;
+				for (b = 0; b < input_blobs_[0]->shape_[0]; ++b)
 				{
-					for (c = 0; c < inputs_[0]->shape_[1]; ++c)
+					for (c = 0; c < input_blobs_[0]->shape_[1]; ++c)
 					{
 						dst += padding_workspace_offset_rows_;
 
-						for (y = 0; y < inputs_[0]->shape_[2]; ++y)
+						for (y = 0; y < input_blobs_[0]->shape_[2]; ++y)
 						{
 							memcpy_s(dst, padding_workspace_copy_cols_mem_size_, src, padding_workspace_copy_cols_mem_size_);
 
-							src += inputs_[0]->shape_[3];
-							dst += padding_workspace_cols_;
+							src += input_blobs_[0]->shape_[3];
+							dst += padding_workspace_.shape_[3];
 						}
 
 						dst += padding_workspace_offset_rows_;
@@ -505,11 +450,11 @@ namespace mst
 				double* tmp_tmp_src;
 
 
-				src = padding_workspace_;
+				src = padding_workspace_.data_;
 				dst = conv_workspace_;
-				for (b = 0; b < inputs_[0]->shape_[0]; ++b)
+				for (b = 0; b < input_blobs_[0]->shape_[0]; ++b)
 				{
-					for (c = 0; c < inputs_[0]->shape_[1]; ++c)
+					for (c = 0; c < input_blobs_[0]->shape_[1]; ++c)
 					{
 
 						tmp_src = src;
@@ -519,21 +464,21 @@ namespace mst
 							{
 
 								tmp_tmp_src = tmp_src + x;
-								for (ky = 0; ky < kernel_size_; ++ky)
+								for (ky = 0; ky < layer_param_.kernel_size_; ++ky)
 								{
-									for (kx = 0; kx < kernel_size_; ++kx)
+									for (kx = 0; kx < layer_param_.kernel_size_; ++kx)
 									{
 										*dst = *(tmp_tmp_src + kx);
 										++dst;
 									}
-									tmp_tmp_src += padding_workspace_cols_;
+									tmp_tmp_src += padding_workspace_.shape_[3];
 								}
 
 							}
-							tmp_src += padding_workspace_cols_;
+							tmp_src += padding_workspace_.shape_[3];
 						}
 
-						src += padding_workspace_size_;
+						src += padding_workspace_.count_[2];
 
 					}
 				}

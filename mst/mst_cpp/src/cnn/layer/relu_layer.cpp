@@ -12,11 +12,9 @@ namespace mst
 
 			//	constructor
 			ReLULayer::ReLULayer()
-				: negative_slope_(0)
-				, input_blobs_()
-				, output_blobs_()
-				, total_count_(0)
+				: layer_param_()
 			{
+				type_ = "ReLULayer";
 			}
 
 
@@ -27,13 +25,16 @@ namespace mst
 
 
 			//	initialize
-			bool ReLULayer::Initialize(double _negative_slope)
+			bool ReLULayer::Initialize(ReLULayerParam& _param)
 			{
+				bool bret;
+
 				//	input check
-				if (_negative_slope < 0)	return false;
+				bret = _param.CheckParam();
+				if (!bret)	return false;
 
 				//	set parameter
-				negative_slope_ = _negative_slope;
+				layer_param_ = _param;
 
 				return true;
 			}
@@ -73,11 +74,11 @@ namespace mst
 
 				src = input_blobs_[0]->data_;
 				dst = output_blobs_[0]->data_;
-				for (n = 0; n < total_count_; ++n)
+				for (n = 0; n < input_blobs_[0]->count_[0]; ++n)
 				{
 					if ((*src) < 0)
 					{
-						(*dst) = negative_slope_ * (*src);
+						(*dst) = layer_param_.negative_slope_ * (*src);
 					}
 					else
 					{
@@ -100,15 +101,8 @@ namespace mst
 			bool ReLULayer::CheckInputBlobs(const std::vector<mst::cnn::Blob*>& _blobs)
 			{
 				if (_blobs.size() != 1)	return false;
-
 				if (_blobs[0] == nullptr)	return false;
-
-				if (_blobs[0]->shape_.size() <= 0)	return false;
-
-				for each (int size in _blobs[0]->shape_)
-				{
-					if (size <= 0)	return false;
-				}
+				if (_blobs[0]->shape_.size() < 2)	return false;
 
 				return true;
 			}
@@ -118,7 +112,6 @@ namespace mst
 			bool ReLULayer::CheckOutputBlobs(const std::vector<mst::cnn::Blob*>& _blobs)
 			{
 				if (_blobs.size() != 1)	return false;
-
 				if (_blobs[0] == nullptr)	return false;
 
 				return true;
@@ -129,19 +122,7 @@ namespace mst
 			bool ReLULayer::ResetInputBlobs(const std::vector<mst::cnn::Blob*>& _blobs)
 			{
 				//	reset input blobls
-				input_blobs_.clear();
-				for each (mst::cnn::Blob* blob in _blobs)
-				{
-					input_blobs_.push_back(blob);
-				}
-
-
-				//	set input blobs variable
-				total_count_ = 1;
-				for each (int size in input_blobs_[0]->shape_)
-				{
-					total_count_ *= size;
-				}
+				input_blobs_ = _blobs;
 
 				return true;
 			}
@@ -150,50 +131,15 @@ namespace mst
 			//	reset output blobs
 			bool ReLULayer::ResetOutputBlobs(const std::vector<mst::cnn::Blob*>& _blobs)
 			{
-				int n;
 				bool bret;
-				std::vector<int> shape;
 
 
 				//	reset output blobs
-				output_blobs_.clear();
-				for each (mst::cnn::Blob* blob in _blobs)
-				{
-					output_blobs_.push_back(blob);
-				}
-
-
-				//	check shape
-				bret = false;
-				if (input_blobs_[0]->shape_.size() != output_blobs_[0]->shape_.size())
-				{
-					bret = true;
-				}
-				else
-				{
-					for (n = 0; n < input_blobs_[0]->shape_.size(); ++n)
-					{
-						if (input_blobs_[0]->shape_[n] != output_blobs_[0]->shape_[n])
-						{
-							bret = true;
-							break;
-						}
-					}
-				}
-
+				output_blobs_ = _blobs;
 
 				//	reshape output blobs
-				if (bret)
-				{
-					shape.clear();
-					for each (int size in output_blobs_[0]->shape_)
-					{
-						shape.push_back(size);
-					}
-
-					bret = output_blobs_[0]->Reshape(shape);
-					if (!bret)	return false;
-				}
+				bret = output_blobs_[0]->Reshape(input_blobs_[0]->shape_);
+				if (!bret)	return false;
 
 				return true;
 			}

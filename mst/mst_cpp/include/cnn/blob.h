@@ -22,6 +22,7 @@ namespace mst
 
 			int dim_;
 			std::vector<int> shape_;
+			std::vector<int> count_;
 
 			double* data_;
 			int data_mem_size_;

@@ -2,22 +2,20 @@
 #include "./opencv2/opencv.hpp"
 
 #include "./cnn/blob.h"
+#include "./cnn/utility.h"
 #include "./cnn/layer/convolution_layer.h"
 
 
 /* entry point */
 int wmain(int _argc, wchar_t** _argv)
 {
-	int y;
-	int x;
-	int c;
-	int n;
+	bool bret;
 
+	int size;
 	cv::Mat image;
-	cv::Mat result1;
-	cv::Mat result2;
+	cv::Mat edge_y;
+	cv::Mat edge_x;
 
-	std::vector<int> shape;
 	mst::cnn::Blob input_blob;
 	mst::cnn::Blob output_blob;
 	std::vector<mst::cnn::Blob*> inputs_blob;
@@ -25,38 +23,55 @@ int wmain(int _argc, wchar_t** _argv)
 
 
 	mst::cnn::layer::ConvolutionLayer conv_layer;
+	mst::cnn::layer::ConvolutionLayerParam conv_layer_param;
 
 
 	//	read image
 	image = cv::imread("../../data/sample_image/sample01.jpg");
 
 	
-	//
-	shape.clear();
-	shape.push_back(1);
-	shape.push_back(3);
-	shape.push_back(image.rows);
-	shape.push_back(image.cols);
-
-	input_blob.Reshape(shape);
-
-	n = 0;
-	for (c = 0; c < image.channels(); ++c)
-	{
-		for (y = 0; y < image.rows; ++y)
-		{
-			for (x = 0; x < image.cols; ++x)
-			{
-				input_blob.data_[n] = image.data[(y * image.cols * image.channels()) + (x * image.channels()) + c];
-				++n;
-			}
-		}
-	}
+	//	set blob
+	bret = mst::cnn::utility::SetBlobImageData(input_blob, image.rows, image.cols, image.channels(), image.data);
 
 
-	//
-	conv_layer.Initialize(2, 3, 1, 1, 0, true);
+	//	initialize
+	conv_layer_param.filter_ = 2;
+	conv_layer_param.kernel_size_ = 3;
+	conv_layer_param.stride_ = 1;
+	conv_layer_param.padding_ = 1;
+	conv_layer_param.padding_mode_ = 0;
+	conv_layer_param.use_bias_ = true;
 
+	bret = conv_layer.Initialize(conv_layer_param);
+
+
+	//	set kernel
+	conv_layer.kernel_[0] = -1;
+	conv_layer.kernel_[1] = -2;
+	conv_layer.kernel_[2] = -1;
+
+	conv_layer.kernel_[3] = 0;
+	conv_layer.kernel_[4] = 0;
+	conv_layer.kernel_[5] = 0;
+
+	conv_layer.kernel_[6] = 1;
+	conv_layer.kernel_[7] = 2;
+	conv_layer.kernel_[8] = 1;
+
+	conv_layer.kernel_[9 + 0] = -1;
+	conv_layer.kernel_[9 + 1] = 0;
+	conv_layer.kernel_[9 + 2] = 1;
+
+	conv_layer.kernel_[9 + 3] = -2;
+	conv_layer.kernel_[9 + 4] = 0;
+	conv_layer.kernel_[9 + 5] = 2;
+
+	conv_layer.kernel_[9 + 6] = -1;
+	conv_layer.kernel_[9 + 7] = 0;
+	conv_layer.kernel_[9 + 8] = 1;
+
+
+	//	reshape
 	inputs_blob.clear();
 	inputs_blob.push_back(&input_blob);
 
@@ -65,34 +80,22 @@ int wmain(int _argc, wchar_t** _argv)
 
 	conv_layer.Reshape(inputs_blob, outputs_blob);
 
+
+	//	forward
 	conv_layer.Forward();
 
 
-	//
-	result1 = cv::Mat(image.rows, image.cols, CV_32FC1);
-	result2 = cv::Mat(image.rows, image.cols, CV_32FC1);
+	//	get edge data
+	size = image.cols * image.rows;
+	edge_y = cv::Mat(image.rows, image.cols, CV_32FC1);
+	edge_x = cv::Mat(image.rows, image.cols, CV_32FC1);
 
-	n = 0;
-	for (y = 0; y < result1.rows; ++y)
-	{
-		for (x = 0; x < result1.cols; ++x)
-		{
-			((float*)result1.data)[(y * result1.cols) + x] = (float)output_blob.data_[n];
-			++n;
-		}
-	}
+	bret = mst::cnn::utility::GetBlobImageData(output_blob, 0, 0, size, (float*)edge_y.data);
 
-	for (y = 0; y < result2.rows; ++y)
-	{
-		for (x = 0; x < result2.cols; ++x)
-		{
-			((float*)result2.data)[(y * result2.cols) + x] = (float)output_blob.data_[n];
-			++n;
-		}
-	}
+	bret = mst::cnn::utility::GetBlobImageData(output_blob, 0, 1, size, (float*)edge_x.data);
 
-	cv::normalize(result1, result1, 0.0, 1.0, CV_MINMAX);
-	cv::normalize(result2, result2, 0.0, 1.0, CV_MINMAX);
+	cv::normalize(edge_y, edge_y, 0.0, 1.0, CV_MINMAX);
+	cv::normalize(edge_x, edge_x, 0.0, 1.0, CV_MINMAX);
 
 
 	//	show image
@@ -100,11 +103,11 @@ int wmain(int _argc, wchar_t** _argv)
 	cv::imshow("sample", image);
 	cv::waitKey(0);
 
-	cv::namedWindow("result1");
-	cv::imshow("result1", result1);
+	cv::namedWindow("edge_y");
+	cv::imshow("edge_y", edge_y);
 
-	cv::namedWindow("result2");
-	cv::imshow("result2", result2);
+	cv::namedWindow("edge_x");
+	cv::imshow("edge_x", edge_x);
 
 	cv::waitKey(0);
 

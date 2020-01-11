@@ -27,10 +27,22 @@
     <ClInclude Include="include\cnn\layer\convolution_layer.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="include\cnn\layer\layer.h">
+    <ClInclude Include="include\cnn\layer\relu_layer.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="include\cnn\layer\relu_layer.h">
+    <ClInclude Include="include\cnn\layer\base_layer.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cnn\layer_param\base_layer_param.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cnn\layer_param\relu_layer_param.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cnn\layer_param\convolution_layer_param.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cnn\utility.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
@@ -44,10 +56,22 @@
     <ClCompile Include="src\cnn\layer\convolution_layer.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\cnn\layer\layer.cpp">
+    <ClCompile Include="src\cnn\layer\relu_layer.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\cnn\layer\relu_layer.cpp">
+    <ClCompile Include="src\cnn\layer\base_layer.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cnn\layer_param\base_layer_param.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cnn\layer_param\relu_layer_param.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cnn\layer_param\convolution_layer_param.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cnn\utility.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>

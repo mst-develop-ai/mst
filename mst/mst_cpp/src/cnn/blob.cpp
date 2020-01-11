@@ -16,6 +16,7 @@ namespace mst
 			: name_("")
 			, dim_(0)
 			, shape_()
+			, count_()
 			, data_(nullptr)
 			, data_mem_size_(0)
 		{
@@ -32,12 +33,30 @@ namespace mst
 		//	reshape
 		bool Blob::Reshape(const std::vector<int>& _shape)
 		{
+			int n;
 			bool bret;
+
+
+			//	check input
+			if (_shape.size() == 0)	return false;
+
+			for each (int num in _shape)
+			{
+				if (num <= 0)	return false;
+			}
 
 
 			//	set parameter
 			shape_ = _shape;
 			dim_ = (int)shape_.size();
+
+
+			//	set variable
+			count_ = shape_;
+			for (n = dim_ - 2; n >= 0; --n)
+			{
+				count_[n] *= count_[n + 1];
+			}
 
 
 			//	allocate memory
@@ -55,12 +74,7 @@ namespace mst
 
 
 			//	allocate
-			size = sizeof(double);
-			for each (int num in shape_)
-			{
-				size *= num;
-			}
-
+			size = count_[0] * sizeof(double);
 			if (size > data_mem_size_)
 			{
 				if (data_ != nullptr)
@@ -79,7 +93,6 @@ namespace mst
 
 			//	initialize
 			memset(data_, 0, data_mem_size_);
-
 
 			return true;
 		}

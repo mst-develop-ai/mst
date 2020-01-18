@@ -1,0 +1,13 @@
+BlankInput
+{
+  name: input
+  output: input
+
+  param
+  {
+    batch: 1
+    channels: 3
+    rows: 480
+    cols: 640
+  }  
+}

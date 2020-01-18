@@ -55,13 +55,11 @@ namespace mst
 				int padding_workspace_offset_rows_;
 				int padding_workspace_copy_cols_mem_size_;
 
+
 				int conv_target_cols_;
 				int conv_target_rows_;
-				int conv_elem_count_;
-				int conv_data_count_;
-				int conv_total_count_;
-				int conv_workspace_mem_size_;
-				double* conv_workspace_;
+				int conv_target_size_;
+				mst::cnn::Blob conv_workspace_;
 
 
 				/* function */
@@ -78,7 +76,14 @@ namespace mst
 				bool ResetOutputBlobs(const std::vector<mst::cnn::Blob*>& _blobs);
 
 				void SetPaddingWorkspaceMemory();
+
 				void SetConvolutionWorkspaceMemory();
+				void SetConvolutionWorkspaceMemory_ChannelFirst();
+				void SetConvolutionWorkspaceMemory_ChannelLast();
+
+				void ConvolutionKernel();
+				void ConvolutionKernel_ChannelFirst();
+				void ConvolutionKernel_ChannelLast();
 
 			};
 

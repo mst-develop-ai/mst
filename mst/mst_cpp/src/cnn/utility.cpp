@@ -1,6 +1,8 @@
 /* include */
 #include "../../include/cnn/utility.h"
 
+#include "../../include/string/string.h"
+
 
 /* namespace */
 namespace mst
@@ -9,6 +11,158 @@ namespace mst
 	{
 		namespace utility
 		{
+
+			//	parse config strings
+			bool ParseConfigStrings(const std::vector<std::string>& _config, std::vector<std::string>& _config_keys, std::vector<std::vector<std::string>>& _config_values)
+			{
+				bool bret;
+
+				const char* data;
+				const char* prev_data;
+
+				int parentheses;
+
+				std::string tmp;
+				std::vector<std::string> buff;
+
+				std::string key;
+
+
+				//	init
+				_config_keys.clear();
+				_config_values.clear();
+
+
+				//	parse config lines
+				parentheses = 0;
+
+				for each (std::string line in _config)
+				{
+					if (line.length() == 0)	continue;
+
+					prev_data = data = line.c_str();
+					while (true)
+					{
+						if ((*data) == '\0')
+						{
+							//	set buffer
+							tmp = std::string(prev_data, data);
+							bret = mst::string::DeleteFrontLastSpaceCode(tmp);
+							if (!bret)	return false;
+
+							if (tmp.length() > 0)
+							{
+								buff.push_back(tmp);
+							}
+
+							break;
+						}
+
+						else if ((*data) == ':')
+						{
+							if (parentheses == 0)
+							{
+								key = std::string(prev_data, data);
+								bret = mst::string::DeleteFrontLastSpaceCode(key);
+								if (!bret)	return false;
+
+								prev_data = data + 1;
+								while (true)
+								{
+									++data;
+									if ((*data) == '\0')
+									{
+										break;
+									}
+								}
+
+								tmp = std::string(prev_data, data);
+								bret = mst::string::DeleteFrontLastSpaceCode(key);
+								if (!bret)	return false;
+
+								_config_keys.push_back(key);
+								_config_values.push_back({ tmp });
+
+								key.clear();
+
+								break;
+							}
+						}
+
+						else if ((*data) == '{')
+						{
+							//	set buffer
+							tmp = std::string(prev_data, data);
+							bret = mst::string::DeleteFrontLastSpaceCode(tmp);
+							if (!bret)	return false;
+
+							if (tmp.length() > 0)
+							{
+								buff.push_back(tmp);
+							}
+
+							prev_data = data + 1;
+
+
+							//	start parentheses
+							++parentheses;
+							if (parentheses == 1)
+							{
+								if (buff.size() != 1)	return false;
+								if (key.length() != 0)	return false;
+
+								key = buff[0];
+								buff.clear();
+							}
+							else
+							{
+								buff.push_back("{");
+							}
+						}
+
+						else if ((*data) == '}')
+						{
+							//	set buffer
+							tmp = std::string(prev_data, data);
+							bret = mst::string::DeleteFrontLastSpaceCode(tmp);
+							if (!bret)	return false;
+
+							if (tmp.length() > 0)
+							{
+								buff.push_back(tmp);
+							}
+
+							prev_data = data + 1;
+
+
+							//	end parentheses
+							--parentheses;
+							if (parentheses < 0)	return false;
+							else if (parentheses == 0)
+							{
+								if (key.length() == 0)	return false;
+
+								_config_keys.push_back(key);
+								_config_values.push_back(buff);
+
+								key.clear();
+								buff.clear();
+							}
+							else
+							{
+								buff.push_back("}");
+							}
+						}
+
+						++data;
+					}
+				}
+
+				if (parentheses != 0)	return false;
+
+				return true;
+			}
+
 
 			//	set blob image data
 			bool SetBlobImageData(mst::cnn::Blob& _blob, int _rows, int _cols, int _channels, const unsigned char* _data)

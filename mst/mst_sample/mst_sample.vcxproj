@@ -154,7 +154,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\cnn\convolution_layer_sample.cpp" />
+    <ClCompile Include="src\cnn\network_config_parse_sample.cpp" />
     <ClCompile Include="src\mst_sample.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\mst_sample.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

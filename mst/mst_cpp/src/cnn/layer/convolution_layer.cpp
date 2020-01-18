@@ -26,11 +26,8 @@ namespace mst
 				, padding_workspace_copy_cols_mem_size_(0)
 				, conv_target_cols_(0)
 				, conv_target_rows_(0)
-				, conv_elem_count_(0)
-				, conv_data_count_(0)
-				, conv_total_count_(0)
-				, conv_workspace_mem_size_(0)
-				, conv_workspace_(nullptr)
+				, conv_target_size_(0)
+				, conv_workspace_()
 			{
 				type_ = "ConvolutionLayer";
 			}
@@ -107,60 +104,17 @@ namespace mst
 			//	forward
 			void ConvolutionLayer::Forward()
 			{
-				int f;
-				int b;
-				int c;
-				int n;
-				int k;
-
-				double* src;
-				double* dst;
-				double* tmp_dst;
-
-				double* kernel_mem;
-				double conv_dst;
-
-
 				//	set workspace
 				SetPaddingWorkspaceMemory();
+
 				SetConvolutionWorkspaceMemory();
 
 
-				//	conv
-				kernel_mem = kernel_;
-				dst = output_blobs_[0]->data_;
-				for (f = 0; f < layer_param_.filter_; ++f)
-				{
-					tmp_dst = dst;
-					src = conv_workspace_;
-					for (b = 0; b < input_blobs_[0]->shape_[0]; ++b)
-					{
-						for (c = 0; c < input_blobs_[0]->shape_[1]; ++c)
-						{
-
-							for (n = 0; n < conv_elem_count_; ++n)
-							{
-								conv_dst = 0;
-								for (k = 0; k < kernel_count_; ++k)
-								{
-									conv_dst += (*src) * (*(kernel_mem + k));
-									++src;
-								}
-
-								tmp_dst[n] += conv_dst;
-							}
-
-						}
-
-						tmp_dst += output_blobs_[0]->count_[1];
-					}
-
-					dst += output_blobs_[0]->count_[2];
-					kernel_mem += kernel_count_;
-				}
+				//	convolution
+				ConvolutionKernel();
 
 
-				//	bias
+				//	add bias
 				if (layer_param_.use_bias_)
 				{
 
@@ -275,38 +229,24 @@ namespace mst
 			//	allocate convolution workspace memory
 			bool ConvolutionLayer::AllocateConvolutionWorkspaceMemory()
 			{
-				int size;
+				bool bret;
+				std::vector<int> shape;
 
 
-				//	allocate
+				//	reshape
 				conv_target_rows_ = padding_workspace_.shape_[2] - (layer_param_.kernel_size_ - 1);
 				conv_target_cols_ = padding_workspace_.shape_[3] - (layer_param_.kernel_size_ - 1);
+				conv_target_size_ = conv_target_rows_ * conv_target_cols_;
 
-				conv_elem_count_ = conv_target_cols_ * conv_target_rows_;
-				conv_data_count_ = input_blobs_[0]->shape_[1] * conv_elem_count_;
-				conv_total_count_ = input_blobs_[0]->shape_[0] * conv_data_count_;
+				shape = {
+					input_blobs_[0]->shape_[0],
+					input_blobs_[0]->shape_[1],
+					conv_target_size_,
+					kernel_count_
+				};
 
-				size = conv_total_count_ * (layer_param_.kernel_size_ * layer_param_.kernel_size_) * sizeof(double);
-
-				if (size > conv_workspace_mem_size_)
-				{
-					if (conv_workspace_ != nullptr)
-					{
-						free(conv_workspace_);
-						conv_workspace_ = nullptr;
-
-						conv_workspace_mem_size_ = 0;
-					}
-
-					conv_workspace_mem_size_ = size;
-					conv_workspace_ = (double*)malloc(conv_workspace_mem_size_);
-					if (conv_workspace_ == nullptr)	return false;
-				}
-
-
-				//	initialize
-				memset(conv_workspace_, 0, conv_workspace_mem_size_);
-
+				bret = conv_workspace_.Reshape(shape);
+				if (!bret)	return false;
 
 				return true;
 			}
@@ -329,14 +269,6 @@ namespace mst
 					bias_ = nullptr;
 
 					bias_mem_size_ = 0;
-				}
-
-				if (conv_workspace_ != nullptr)
-				{
-					free(conv_workspace_);
-					conv_workspace_ = nullptr;
-
-					conv_workspace_mem_size_ = 0;
 				}
 			}
 
@@ -435,6 +367,12 @@ namespace mst
 			//	set conv workspace memory
 			void ConvolutionLayer::SetConvolutionWorkspaceMemory()
 			{
+				SetConvolutionWorkspaceMemory_ChannelFirst();
+				//SetConvolutionWorkspaceMemory_ChannelLast();
+			}
+
+			void ConvolutionLayer::SetConvolutionWorkspaceMemory_ChannelFirst()
+			{
 				int b;
 				int c;
 				int y;
@@ -449,9 +387,8 @@ namespace mst
 				double* tmp_src;
 				double* tmp_tmp_src;
 
-
 				src = padding_workspace_.data_;
-				dst = conv_workspace_;
+				dst = conv_workspace_.data_;
 				for (b = 0; b < input_blobs_[0]->shape_[0]; ++b)
 				{
 					for (c = 0; c < input_blobs_[0]->shape_[1]; ++c)
@@ -482,7 +419,178 @@ namespace mst
 
 					}
 				}
+			}
 
+			void ConvolutionLayer::SetConvolutionWorkspaceMemory_ChannelLast()
+			{
+				int b;
+				int c;
+				int y;
+				int x;
+
+				int ky;
+				int kx;
+
+				double* src;
+				double* dst;
+
+				double* tmp_src;
+				double* tmp_tmp_src;
+				double* tmp_tmp_tmp_src;
+
+				src = padding_workspace_.data_;
+				dst = conv_workspace_.data_;
+				for (b = 0; b < input_blobs_[0]->shape_[0]; ++b)
+				{
+
+					tmp_src = src;
+					for (y = 0; y < conv_target_rows_; ++y)
+					{
+						for (x = 0; x < conv_target_cols_; ++x)
+						{
+
+							tmp_tmp_src = tmp_src + x;
+							for (c = 0; c < input_blobs_[0]->shape_[1]; ++c)
+							{
+
+								tmp_tmp_tmp_src = tmp_tmp_src;
+								for (ky = 0; ky < layer_param_.kernel_size_; ++ky)
+								{
+									for (kx = 0; kx < layer_param_.kernel_size_; ++kx)
+									{
+										*dst = *(tmp_tmp_tmp_src + kx);
+										++dst;
+									}
+									tmp_tmp_tmp_src += padding_workspace_.shape_[3];
+								}
+
+								tmp_tmp_src += padding_workspace_.count_[2];
+							}
+
+						}
+
+						tmp_src += padding_workspace_.shape_[3];
+					}
+
+					src += padding_workspace_.count_[1];
+				}
+			}
+
+
+			//	convolution
+			void ConvolutionLayer::ConvolutionKernel()
+			{
+				ConvolutionKernel_ChannelFirst();
+				//ConvolutionKernel_ChannelLast();
+			}
+
+			void ConvolutionLayer::ConvolutionKernel_ChannelFirst()
+			{
+				int b;
+				int f;
+				int c;
+				int n;
+				int k;
+
+				double* src;
+				double* tmp_src;
+				double* dst;
+				double* tmp_dst;
+
+				double* kernel_mem;
+				double conv_dst;
+
+
+				//	inititalize
+				memset(output_blobs_[0]->data_, 0, output_blobs_[0]->data_mem_size_);
+
+
+				//	conv
+				src = conv_workspace_.data_;
+				dst = output_blobs_[0]->data_;
+				for (b = 0; b < input_blobs_[0]->shape_[0]; ++b)
+				{
+
+					tmp_dst = dst;
+					kernel_mem = kernel_;
+					for (f = 0; f < layer_param_.filter_; ++f)
+					{
+
+						tmp_src = src;
+						for (c = 0; c < input_blobs_[0]->shape_[1]; ++c)
+						{
+							for (n = 0; n < conv_target_size_; ++n)
+							{
+
+								conv_dst = 0;
+								for (k = 0; k < kernel_count_; ++k)
+								{
+									conv_dst += (*tmp_src) * (*(kernel_mem + k));
+									++tmp_src;
+								}
+
+								*(tmp_dst + n) += conv_dst;
+
+							}
+						}
+
+						tmp_dst += output_blobs_[0]->count_[2];
+						kernel_mem += kernel_count_;
+					}
+
+					src += conv_workspace_.count_[1];
+					dst += output_blobs_[0]->count_[1];
+				}
+
+			}
+
+			void ConvolutionLayer::ConvolutionKernel_ChannelLast()
+			{
+				int b;
+				int f;
+				int n;
+				int c;
+				int k;
+
+				double* src;
+				double* tmp_src;
+				double* dst;
+
+				double* kernel_mem;
+				double conv_dst;
+
+				src = conv_workspace_.data_;
+				dst = output_blobs_[0]->data_;
+				for (b = 0; b < input_blobs_[0]->shape_[0]; ++b)
+				{
+
+					kernel_mem = kernel_;
+					for (f = 0; f < layer_param_.filter_; ++f)
+					{
+						tmp_src = src;
+						for (n = 0; n < conv_target_size_; ++n)
+						{
+
+							conv_dst = 0;
+							for (c = 0; c < input_blobs_[0]->shape_[1]; ++c)
+							{
+								for (k = 0; k < kernel_count_; ++k)
+								{
+									conv_dst += ((*tmp_src) * (*(kernel_mem + k)));
+									++tmp_src;
+								}
+							}
+
+							*dst = conv_dst;
+							++dst;
+
+						}
+
+						kernel_mem += kernel_count_;
+					}
+
+					src += conv_workspace_.count_[1];
+				}
 			}
 
 		}

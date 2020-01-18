@@ -144,25 +144,33 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\cnn\blob.h" />
+    <ClInclude Include="include\cnn\layer\blank_input_layer.h" />
     <ClInclude Include="include\cnn\layer\convolution_layer.h" />
     <ClInclude Include="include\cnn\layer\base_layer.h" />
     <ClInclude Include="include\cnn\layer_param\base_layer_param.h" />
+    <ClInclude Include="include\cnn\layer_param\blank_input_layer_param.h" />
     <ClInclude Include="include\cnn\layer_param\convolution_layer_param.h" />
     <ClInclude Include="include\cnn\layer_param\relu_layer_param.h" />
     <ClInclude Include="include\cnn\network.h" />
     <ClInclude Include="include\cnn\layer\relu_layer.h" />
     <ClInclude Include="include\cnn\utility.h" />
+    <ClInclude Include="include\file\file.h" />
+    <ClInclude Include="include\string\string.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\cnn\blob.cpp" />
+    <ClCompile Include="src\cnn\layer\blank_input_layer.cpp" />
     <ClCompile Include="src\cnn\layer\convolution_layer.cpp" />
     <ClCompile Include="src\cnn\layer\base_layer.cpp" />
     <ClCompile Include="src\cnn\layer_param\base_layer_param.cpp" />
+    <ClCompile Include="src\cnn\layer_param\blank_input_layer_param.cpp" />
     <ClCompile Include="src\cnn\layer_param\convolution_layer_param.cpp" />
     <ClCompile Include="src\cnn\layer_param\relu_layer_param.cpp" />
     <ClCompile Include="src\cnn\network.cpp" />
     <ClCompile Include="src\cnn\layer\relu_layer.cpp" />
     <ClCompile Include="src\cnn\utility.cpp" />
+    <ClCompile Include="src\file\file.cpp" />
+    <ClCompile Include="src\string\string.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

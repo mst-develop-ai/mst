@@ -1,9 +1,10 @@
-﻿  mst_sample.cpp
+﻿  convolution_layer_sample.cpp
+D:\Development\mst\3rdparty\opencv\include\opencv2/calib3d.hpp : warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  network_config_parse_sample.cpp
+  mst_sample.cpp
 D:\Development\mst\3rdparty\opencv\include\opencv2/calib3d.hpp : warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
   コード生成しています。
-  1 of 474 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    1 functions had inline decision re-evaluated but remain unchanged
+  All 1047 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   コード生成が終了しました。
   mst_sample.vcxproj -> D:\Development\mst\mst\x64\Release\mst_sample.exe
   mst_sample.vcxproj -> D:\Development\mst\mst\x64\Release\mst_sample.pdb (Full PDB)

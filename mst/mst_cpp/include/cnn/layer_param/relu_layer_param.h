@@ -3,6 +3,8 @@
 /* include */
 #include "../../../include/cnn/layer_param/base_layer_param.h"
 
+#include <vector>
+
 
 /* namespace */
 namespace mst
@@ -23,6 +25,8 @@ namespace mst
 				~ReLULayerParam();
 
 				bool CheckParam();
+
+				bool ParseConfigStrings(const std::vector<std::string> _config);
 
 
 				/* parameter */

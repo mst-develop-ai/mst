@@ -20,6 +20,8 @@ namespace mst
 				, padding_(1)
 				, padding_mode_(0)
 				, use_bias_(true)
+				, kernel_initializer_config_()
+				, bias_initializer_config_()
 			{
 			}
 
@@ -99,6 +101,14 @@ namespace mst
 					else if (_stricmp(key.c_str(), "use_bias") == 0)
 					{
 						use_bias_ = ((_stricmp(values[0].c_str(), "true") == 0) || ((_stricmp(values[0].c_str(), "1") == 0)));
+					}
+					else if (_stricmp(key.c_str(), "kernel_initializer") == 0)
+					{
+						kernel_initializer_config_ = values;
+					}
+					else if (_stricmp(key.c_str(), "bias_initializer") == 0)
+					{
+						bias_initializer_config_ = values;
 					}
 				}
 

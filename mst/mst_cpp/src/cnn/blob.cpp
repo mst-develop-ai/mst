@@ -17,8 +17,11 @@ namespace mst
 			, dim_(0)
 			, shape_()
 			, count_()
+			, no_diff_(false)
 			, data_(nullptr)
 			, data_mem_size_(0)
+			, diff_(nullptr)
+			, diff_mem_size_(0)
 		{
 		}
 
@@ -31,7 +34,7 @@ namespace mst
 
 
 		//	reshape
-		bool Blob::Reshape(const std::vector<int>& _shape)
+		bool Blob::Reshape(const std::vector<int>& _shape, bool _no_diff)
 		{
 			int n;
 			bool bret;
@@ -49,6 +52,8 @@ namespace mst
 			//	set parameter
 			shape_ = _shape;
 			dim_ = (int)shape_.size();
+
+			no_diff_ = _no_diff;
 
 
 			//	set variable
@@ -72,9 +77,9 @@ namespace mst
 		{
 			int size;
 
-
 			//	allocate
 			size = count_[0] * sizeof(double);
+
 			if (size > data_mem_size_)
 			{
 				if (data_ != nullptr)
@@ -90,9 +95,41 @@ namespace mst
 				if (data_ == nullptr)	return false;
 			}
 
-
 			//	initialize
 			memset(data_, 0, data_mem_size_);
+
+
+			//	allocate
+			if (no_diff_)
+			{
+				if (diff_ != nullptr)
+				{
+					free(diff_);
+					data_ = nullptr;
+
+					diff_mem_size_ = 0;
+				}
+			}
+			else
+			{
+				if (size > diff_mem_size_)
+				{
+					if (diff_ != nullptr)
+					{
+						free(diff_);
+						data_ = nullptr;
+
+						diff_mem_size_ = 0;
+					}
+
+					diff_mem_size_ = size;
+					diff_ = (double*)malloc(diff_mem_size_);
+					if (diff_ == nullptr)	return false;
+				}
+
+				//	initialize
+				memset(diff_, 0, diff_mem_size_);
+			}
 
 			return true;
 		}
@@ -107,6 +144,14 @@ namespace mst
 				data_ = nullptr;
 
 				data_mem_size_ = 0;
+			}
+
+			if (diff_ != nullptr)
+			{
+				free(diff_);
+				diff_ = nullptr;
+
+				diff_mem_size_ = 0;
 			}
 		}
 

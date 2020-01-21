@@ -11,7 +11,8 @@
 /* entry point */
 int wmain(int _argc, wchar_t** _argv)
 {
-	NetworkConfigParseSample();
+	//NetworkConfigParseSample();
+	CSVParserSample();
 
 	return 0;
 }

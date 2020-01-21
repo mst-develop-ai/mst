@@ -11,3 +11,61 @@ BlankInput
     cols: 640
   }  
 }
+
+Convolution
+{
+  name: conv_1
+  input: input
+  output: conv_1
+
+  param
+  {
+    filter: 2
+    kernel: 3
+    stride: 1
+    pad: 1
+    pad_mode: 0
+    use_bias: true
+
+    kernel_initializer
+    {
+        type: he_normal
+    }
+
+    bias_initializer
+    {
+        type: constant
+        value: 0.5
+    }
+  }  
+}
+
+ReLU
+{
+  name: relu_1
+  input: conv_1
+  output: relu_1
+
+  param
+  {
+    negative_slope: 0.1
+  }
+}
+
+
+Convolution
+{
+  name: conv_2
+  input: input
+  output: conv_2
+
+  param
+  {
+    filter: 2
+    kernel: 3
+    stride: 1
+    pad: 1
+    pad_mode: 0
+    use_bias: true
+  }  
+}

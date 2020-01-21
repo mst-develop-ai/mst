@@ -49,7 +49,7 @@
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -138,39 +138,56 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
+    <Lib>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\cnn\blob.h" />
+    <ClInclude Include="include\cnn\initializer.h" />
     <ClInclude Include="include\cnn\layer\blank_input_layer.h" />
     <ClInclude Include="include\cnn\layer\convolution_layer.h" />
     <ClInclude Include="include\cnn\layer\base_layer.h" />
+    <ClInclude Include="include\cnn\layer\cross_entropy_loss.h" />
+    <ClInclude Include="include\cnn\layer\image_list_layer.h" />
     <ClInclude Include="include\cnn\layer_param\base_layer_param.h" />
     <ClInclude Include="include\cnn\layer_param\blank_input_layer_param.h" />
     <ClInclude Include="include\cnn\layer_param\convolution_layer_param.h" />
+    <ClInclude Include="include\cnn\layer_param\cross_entropy_loss_param.h" />
+    <ClInclude Include="include\cnn\layer_param\image_list_layer_param.h" />
     <ClInclude Include="include\cnn\layer_param\relu_layer_param.h" />
     <ClInclude Include="include\cnn\network.h" />
     <ClInclude Include="include\cnn\layer\relu_layer.h" />
     <ClInclude Include="include\cnn\utility.h" />
+    <ClInclude Include="include\file\csv_parser.h" />
     <ClInclude Include="include\file\file.h" />
     <ClInclude Include="include\string\string.h" />
+    <ClInclude Include="include\windows\windows.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\cnn\blob.cpp" />
+    <ClCompile Include="src\cnn\initializer.cpp" />
     <ClCompile Include="src\cnn\layer\blank_input_layer.cpp" />
     <ClCompile Include="src\cnn\layer\convolution_layer.cpp" />
     <ClCompile Include="src\cnn\layer\base_layer.cpp" />
+    <ClCompile Include="src\cnn\layer\cross_entropy_loss.cpp" />
+    <ClCompile Include="src\cnn\layer\image_list_layer.cpp" />
     <ClCompile Include="src\cnn\layer_param\base_layer_param.cpp" />
     <ClCompile Include="src\cnn\layer_param\blank_input_layer_param.cpp" />
     <ClCompile Include="src\cnn\layer_param\convolution_layer_param.cpp" />
+    <ClCompile Include="src\cnn\layer_param\cross_entropy_loss_param.cpp" />
+    <ClCompile Include="src\cnn\layer_param\image_list_layer_param.cpp" />
     <ClCompile Include="src\cnn\layer_param\relu_layer_param.cpp" />
     <ClCompile Include="src\cnn\network.cpp" />
     <ClCompile Include="src\cnn\layer\relu_layer.cpp" />
     <ClCompile Include="src\cnn\utility.cpp" />
+    <ClCompile Include="src\file\csv_parser.cpp" />
     <ClCompile Include="src\file\file.cpp" />
     <ClCompile Include="src\string\string.cpp" />
+    <ClCompile Include="src\windows\windows.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

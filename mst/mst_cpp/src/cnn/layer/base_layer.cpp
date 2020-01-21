@@ -25,6 +25,13 @@ namespace mst
 			{
 			}
 
+
+			//	initialize weights
+			bool BaseLayer::InitializeWeights()
+			{
+				return true;
+			}
+
 		}
 	}
 }

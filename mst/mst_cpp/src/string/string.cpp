@@ -90,5 +90,50 @@ namespace mst
 			return true;
 		}
 
+
+		//	split delimiter
+		bool SplitDelimiter(const char* _str, char _delimiter, std::vector<std::string>& _dst)
+		{
+			const char* prev;
+			const char* pos;
+
+
+			//	initialize
+			_dst.clear();
+
+
+			//	check input
+			if (_str == nullptr)	return false;
+			if (_delimiter == '\0')	return false;
+
+
+			//	split
+			prev = pos = _str;
+			while (true)
+			{
+				if ((*pos) == '\0')
+				{
+					_dst.push_back(std::string(prev, pos));
+					break;
+				}
+				else if ((*pos) == _delimiter)
+				{
+					_dst.push_back(std::string(prev, pos));
+					prev = pos + 1;
+				}
+
+				++pos;
+			}
+
+			return true;
+		}
+
+
+		//	split delimiter
+		bool SplitDelimiter(const std::string& _str, char _delimiter, std::vector<std::string>& _dst)
+		{
+			return SplitDelimiter(_str.c_str(), _delimiter, _dst);
+		}
+
 	}
 }

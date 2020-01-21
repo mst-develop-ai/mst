@@ -1,14 +1,2 @@
-﻿  blob.cpp
-  blank_input_layer.cpp
-  convolution_layer.cpp
-  base_layer.cpp
-  base_layer_param.cpp
-  blank_input_layer_param.cpp
-  convolution_layer_param.cpp
-  relu_layer_param.cpp
-  network.cpp
-  relu_layer.cpp
-  utility.cpp
-  file.cpp
-  string.cpp
+﻿  csv_parser.cpp
   mst_cpp.vcxproj -> D:\Development\mst\mst\mst_cpp\.\lib\mst_cpp.lib

@@ -66,7 +66,7 @@ namespace mst
 
 
 			//	forward
-			void ReLULayer::Forward()
+			bool ReLULayer::Forward()
 			{
 				int n;
 				double* src;
@@ -88,12 +88,39 @@ namespace mst
 					++src;
 					++dst;
 				}
+
+				return true;
 			}
 
 
 			//	backward
-			void ReLULayer::Backward()
+			bool ReLULayer::Backward()
 			{
+				int n;
+				double* input_diff;
+				double* output_data;
+				double* output_diff;
+
+				input_diff = input_blobs_[0]->diff_;
+				output_data = output_blobs_[0]->data_;
+				output_diff = output_blobs_[0]->diff_;
+				for (n = 0; n < output_blobs_[0]->count_[0]; ++n)
+				{
+					if ((*output_data) < 0)
+					{
+						*input_diff = layer_param_.negative_slope_ * (*output_diff);
+					}
+					else
+					{
+						*input_diff = 1.0 * (*output_diff);
+					}
+
+					++input_diff;
+					++output_data;
+					++output_diff;
+				}
+
+				return true;
 			}
 
 

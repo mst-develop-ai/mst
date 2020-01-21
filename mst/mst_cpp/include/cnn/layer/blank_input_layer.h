@@ -29,8 +29,8 @@ namespace mst
 				bool Initialize(BlankInputLayerParam& _param);
 				bool Reshape(const std::vector<mst::cnn::Blob*>& _input_blobs, const std::vector<mst::cnn::Blob*>& _output_blobs);
 
-				void Forward();
-				void Backward();
+				bool Forward();
+				bool Backward();
 
 				bool SetImageDataLookupTable(double _scale, double _bias);
 				bool SetOutputBlobImageData(int _cols, int _rows, int _channels, const unsigned char* _data);

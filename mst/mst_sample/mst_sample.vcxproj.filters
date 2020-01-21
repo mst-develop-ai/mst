@@ -24,6 +24,9 @@
     <ClCompile Include="src\cnn\network_config_parse_sample.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="src\file\csv_parser_sample.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\mst_sample.h">

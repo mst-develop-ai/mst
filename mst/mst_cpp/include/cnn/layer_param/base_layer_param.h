@@ -1,6 +1,7 @@
 #pragma once
 
 /* include */
+#include <vector>
 #include <string>
 
 
@@ -23,6 +24,7 @@ namespace mst
 				virtual ~BaseLayerParam();
 
 				virtual bool CheckParam() = 0;
+				virtual bool ParseConfigStrings(const std::vector<std::string> _config) = 0;
 
 
 				/* parameter */

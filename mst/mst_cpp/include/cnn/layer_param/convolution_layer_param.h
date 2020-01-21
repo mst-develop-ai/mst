@@ -37,6 +37,9 @@ namespace mst
 				int padding_mode_;
 				bool use_bias_;
 
+				std::vector<std::string> kernel_initializer_config_;
+				std::vector<std::string> bias_initializer_config_;
+
 			};
 
 		}

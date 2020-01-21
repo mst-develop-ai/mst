@@ -28,10 +28,11 @@ namespace mst
 				BaseLayer(const BaseLayer& _obj) = delete;
 				BaseLayer& operator=(const BaseLayer& _obj) = delete;
 
-				virtual void Forward() = 0;
-				virtual void Backward() = 0;
+				virtual bool Forward() = 0;
+				virtual bool Backward() = 0;
 
 				virtual bool Reshape(const std::vector<mst::cnn::Blob*>& _input_blobs, const std::vector<mst::cnn::Blob*>& _output_blobs) = 0;
+				virtual bool InitializeWeights();
 
 
 				/* parameter */

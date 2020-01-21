@@ -77,7 +77,7 @@ namespace mst
 								}
 
 								tmp = std::string(prev_data, data);
-								bret = mst::string::DeleteFrontLastSpaceCode(key);
+								bret = mst::string::DeleteFrontLastSpaceCode(tmp);
 								if (!bret)	return false;
 
 								_config_keys.push_back(key);

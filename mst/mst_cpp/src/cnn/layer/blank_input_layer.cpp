@@ -68,14 +68,16 @@ namespace mst
 
 
 			//	forward
-			void BlankInputLayer::Forward()
+			bool BlankInputLayer::Forward()
 			{
+				return true;
 			}
 
 
 			//	backward
-			void BlankInputLayer::Backward()
+			bool BlankInputLayer::Backward()
 			{
+				return true;
 			}
 
 
@@ -163,7 +165,10 @@ namespace mst
 
 			//	reset input blobs
 			bool BlankInputLayer::ResetInputBlobs(const std::vector<mst::cnn::Blob*>& _blobs)
-			{				
+			{
+				//	reset input blobls
+				input_blobs_ = _blobs;
+
 				return true;
 			}
 

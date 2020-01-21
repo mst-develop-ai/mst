@@ -31,8 +31,8 @@ namespace mst
 				bool Initialize(ReLULayerParam& _param);
 				bool Reshape(const std::vector<mst::cnn::Blob*>& _input_blobs, const std::vector<mst::cnn::Blob*>& _output_blobs);
 
-				void Forward();
-				void Backward();
+				bool Forward();
+				bool Backward();
 
 
 				/* parameter */

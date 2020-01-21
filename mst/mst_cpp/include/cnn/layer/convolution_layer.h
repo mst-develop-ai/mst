@@ -31,8 +31,10 @@ namespace mst
 				bool Initialize(ConvolutionLayerParam& _param);
 				bool Reshape(const std::vector<mst::cnn::Blob*>& _input_blobs, const std::vector<mst::cnn::Blob*>& _output_blobs);
 
-				void Forward();
-				void Backward();
+				bool InitializeWeights();
+
+				bool Forward();
+				bool Backward();
 
 
 				/* parameter */
@@ -85,6 +87,7 @@ namespace mst
 				void ConvolutionKernel_ChannelFirst();
 				void ConvolutionKernel_ChannelLast();
 
+				void AddBias();
 			};
 
 		}

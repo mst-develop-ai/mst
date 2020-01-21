@@ -1,5 +1,6 @@
 /* include */
 #include "../../../include/cnn/layer/convolution_layer.h"
+#include "../../../include/cnn/initializer.h"
 
 #include <stdlib.h>
 #include <memory.h>
@@ -101,8 +102,29 @@ namespace mst
 			}
 
 
+			//	initialize weights
+			bool ConvolutionLayer::InitializeWeights()
+			{
+				bool bret;
+
+
+				//	kernel
+				bret = mst::cnn::initializer::InitializeWeights(layer_param_.kernel_initializer_config_, input_blobs_[0]->shape_[1], output_blobs_[0]->shape_[1], kernel_, kernel_count_);
+				if (!bret)	return false;
+
+				//	bias
+				if (layer_param_.use_bias_)
+				{
+					bret = mst::cnn::initializer::InitializeWeights(layer_param_.bias_initializer_config_, input_blobs_[0]->shape_[1], output_blobs_[0]->shape_[1], bias_, layer_param_.filter_);
+					if (!bret)	return false;
+				}
+
+				return true;
+			}
+
+
 			//	forward
-			void ConvolutionLayer::Forward()
+			bool ConvolutionLayer::Forward()
 			{
 				//	set workspace
 				SetPaddingWorkspaceMemory();
@@ -117,14 +139,18 @@ namespace mst
 				//	add bias
 				if (layer_param_.use_bias_)
 				{
-
+					AddBias();
 				}
+
+				return true;
 			}
 
 
 			//	backward
-			void ConvolutionLayer::Backward()
+			bool ConvolutionLayer::Backward()
 			{
+
+				return true;
 			}
 
 
@@ -320,7 +346,7 @@ namespace mst
 
 				shape = {
 					input_blobs_[0]->shape_[0],
-					input_blobs_[0]->shape_[1],
+					layer_param_.filter_,
 					(input_blobs_[0]->shape_[2] + layer_param_.padding_ + layer_param_.padding_ - (layer_param_.kernel_size_ - 1)) / layer_param_.stride_,
 					(input_blobs_[0]->shape_[3] + layer_param_.padding_ + layer_param_.padding_ - (layer_param_.kernel_size_ - 1)) / layer_param_.stride_
 				};
@@ -590,6 +616,31 @@ namespace mst
 					}
 
 					src += conv_workspace_.count_[1];
+				}
+			}
+
+
+			//	add bias
+			void ConvolutionLayer::AddBias()
+			{
+				int b;
+				int c;
+				int n;
+				double* data;
+
+				data = output_blobs_[0]->data_;
+				for (b = 0; b < output_blobs_[0]->shape_[0]; ++b)
+				{
+					for (c = 0; c < output_blobs_[0]->shape_[1]; ++c)
+					{
+
+						for (n = 0; n < output_blobs_[0]->count_[2]; ++n)
+						{
+							(*data) += *(bias_ + c);
+							++data;
+						}
+
+					}
 				}
 			}
 
